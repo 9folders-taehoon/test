@@ -322,13 +322,24 @@ def without_one_two_log():
             if int(i.split(",")[0].replace("[", "")) >= 5:
                 domain = i.split(",")[1].replace("]\n", "").replace("'", "").lstrip()
                 hit_rate = int(i.split(",")[0].replace("[", ""))
-                with open("beaty", "a") as ff:
+                with open(
+                    f"/Users/taehoon/logs/final_result_{file_date}.log", "a"
+                ) as ff:
                     ff.write(f"[{hit_rate}, {domain}]\n")
+    delete_file(f"/Users/taehoon/logs/result_{file_date}.log")
+
+
+def delete_file(filepath):
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        print("remove ok")
+    else:
+        print("no search file_path")
 
 
 # 가공된 기본 로그 생성
-# command = "sh /Users/taehoon/make_log_file.sh"
-# os.system(command)
+command = "sh /Users/taehoon/make_log_file.sh"
+os.system(command)
 
 
 # DB에서 데이터 불러옴
@@ -336,7 +347,7 @@ def without_one_two_log():
 
 
 # 규격화된 로그 파일로 생성
-# log_contrast_with_db()
+log_contrast_with_db()
 
 
 # 5이상의 도메인만 로그 파일로 다시 생성;;
