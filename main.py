@@ -326,16 +326,22 @@ def without_one_two_log():
                     ff.write(f"[{hit_rate}, {domain}]\n")
 
 
-d
-
-# input_deactivate_data()
+# 가공된 기본 로그 생성
 # command = "sh /Users/taehoon/make_log_file.sh"
 # os.system(command)
 
-# load_db_data()
-# log_contrast_with_db()
-# input_data()
-#
-# input_deactivate_data()
 
+# DB에서 데이터 불러옴
+# load_db_data()
+
+
+# 규격화된 로그 파일로 생성
+# log_contrast_with_db()
+
+
+# 5이상의 도메인만 로그 파일로 다시 생성;;
 without_one_two_log()
+
+
+# DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
+# input_deactivate_data()
