@@ -5,7 +5,7 @@ import pymysql
 import json
 import os
 import subprocess
-
+import calendar
 
 dev_bastion_host = "3.38.97.146"
 dev_bastion_user = "ubuntu"
@@ -38,6 +38,21 @@ uniq_list = []
 d = []
 now = datetime.today()
 file_date = now.strftime("%Y-%m-%d")
+# file_date = "2024-04-23"
+m = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+]
 
 
 def input_deactivate_data():
@@ -207,7 +222,7 @@ def load_db_data():
             print(f"Error: {e}")
         finally:
             cur.close()
-
+            print("load_data OK")
         # print(json.dumps(domain_list, indent=2, ensure_ascii=False), len(domain_list))
 
     #########################################
@@ -270,9 +285,11 @@ def log_contrast_with_db():
         #         print(uniq_list)
 
         # a = i.split()[1].replace("\n", "")
-        with open(f"/Users/taehoon/logs/result_{file_date}.log", "a") as ff:
+        with open(f"/Users/taehoon/logs/no_filter_result_{file_date}.log", "a") as ff:
             for i in uniq_list:
                 ff.write(f"{i}\n")
+    print("log_contrast_with_db OK")
+    delete_file(f"/Users/taehoon/logs/daily_top_request_domain_{file_date}.log")
 
 
 # ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
@@ -315,18 +332,17 @@ def input_data():
         # print(json.dumps(domain_list, indent=2, ensure_ascii=False), len(domain_list))
 
 
-def without_one_two_log():
-    with open(f"/Users/taehoon/logs/result_{file_date}.log") as f:
+def without_one_five_log():
+    with open(f"/Users/taehoon/logs/no_filter_result_{file_date}.log") as f:
         a = f.readlines()
         for i in a:
             if int(i.split(",")[0].replace("[", "")) >= 5:
                 domain = i.split(",")[1].replace("]\n", "").replace("'", "").lstrip()
                 hit_rate = int(i.split(",")[0].replace("[", ""))
-                with open(
-                    f"/Users/taehoon/logs/final_result_{file_date}.log", "a"
-                ) as ff:
+                with open(f"/Users/taehoon/logs/result_{file_date}.log", "a") as ff:
                     ff.write(f"[{hit_rate}, {domain}]\n")
-    delete_file(f"/Users/taehoon/logs/result_{file_date}.log")
+    print("without_one_five_log OK")
+    delete_file(f"/Users/taehoon/logs/no_filter_result_{file_date}.log")
 
 
 def delete_file(filepath):
@@ -337,21 +353,53 @@ def delete_file(filepath):
         print("no search file_path")
 
 
-# 가공된 기본 로그 생성
-command = "sh /Users/taehoon/make_log_file.sh"
-os.system(command)
+def sum_log():
+    year = datetime.now().year
+    last_month = datetime.now().month - 1
+    format_month = "{:02}".format(last_month)
+    make_file_path = f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum.log"
+
+    if datetime.now().day == 24:
+        # for day in range(calendar.monthrange(year, last_month)[1]):
+        for day in range(calendar.monthrange(year, last_month + 1)[1]):
+            format_day = "{:02}".format(day + 1)
+            # read_file_path = f"/Users/taehoon/logs/final_result_{year}-{format_month}-{format_day}.log"
+            read_file_path = f"/Users/taehoon/logs/result_{year}-04-{format_day}.log"
+
+            if os.path.isfile(read_file_path) == True:
+                with open(read_file_path, "r") as f:
+                    r = f.read()
+                    with open(make_file_path, "a") as ff:
+                        ff.write(r)
+            else:
+                continue
+    print("sum_log OK")
+
+
+
+
+
+# 가공된 기본 로그 생성 -> daily_top_request_domain.log 파일 생성
+# command = "sh /Users/taehoon/make_log_file.sh"
+# os.system(command)
 
 
 # DB에서 데이터 불러옴
 # load_db_data()
 
 
-# 규격화된 로그 파일로 생성
-log_contrast_with_db()
+# 규격화된 로그 DB 파일로 생성 -> no_filter_result.log 파일 생성 및 daily_top_request_domain.log 파일 삭제
+# log_contrast_with_db()
 
 
-# 5이상의 도메인만 로그 파일로 다시 생성;;
-without_one_two_log()
+# 5이상의 도메인만 로그 파일로 다시 생성;; -> result.log 파일 생성 및 no_filter_result.log 파일 삭제
+# without_one_five_log()
+
+
+# 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
+# sum_log()
+
+# 한달치 로그 합친것을 소트
 
 
 # DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
