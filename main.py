@@ -53,6 +53,9 @@ m = [
     "November",
     "December",
 ]
+year = datetime.now().year
+last_month = datetime.now().month - 1
+format_month = "{:02}".format(last_month)
 
 
 def input_deactivate_data():
@@ -92,14 +95,22 @@ def input_deactivate_data():
         #     )
 
         with conn.cursor() as cur:
-            with open(f"/Users/taehoon/logs/result_{file_date}.log") as f:
+            from datetime import datetime
+
+            with open(
+                f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log"
+            ) as f:
                 a = f.readlines()
-                for i in a:
-                    if int(i.split(",")[0].replace("[", "")) >= 20:
+                for i in range(0, 10):
+                    if int(a[i].split(",")[0].replace("[", "")) >= 20:
                         domain = (
-                            i.split(",")[1].replace("]\n", "").replace("'", "").lstrip()
+                            a[i]
+                            .split(",")[1]
+                            .replace("]\n", "")
+                            .replace("'", "")
+                            .lstrip()
                         )
-                        hit_rate = int(i.split(",")[0].replace("[", ""))
+                        # hit_rate = int(i.split(",")[0].replace("[", ""))
                         # query_domain_result = (
                         #     cur.query(CompanyLogoDailyDB)
                         #     .filter(CompanyLogoDailyDB.domain == domain)
@@ -354,53 +365,73 @@ def delete_file(filepath):
 
 
 def sum_log():
-    year = datetime.now().year
-    last_month = datetime.now().month - 1
-    format_month = "{:02}".format(last_month)
     make_file_path = f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum.log"
 
-    if datetime.now().day == 24:
-        # for day in range(calendar.monthrange(year, last_month)[1]):
-        for day in range(calendar.monthrange(year, last_month + 1)[1]):
-            format_day = "{:02}".format(day + 1)
-            # read_file_path = f"/Users/taehoon/logs/final_result_{year}-{format_month}-{format_day}.log"
-            read_file_path = f"/Users/taehoon/logs/result_{year}-04-{format_day}.log"
+    # for day in range(calendar.monthrange(year, last_month)[1]):
+    for day in range(calendar.monthrange(year, last_month + 1)[1]):
+        format_day = "{:02}".format(day + 1)
+        # read_file_path = f"/Users/taehoon/logs/final_result_{year}-{format_month}-{format_day}.log"
+        read_file_path = f"/Users/taehoon/logs/result_{year}-04-{format_day}.log"
 
-            if os.path.isfile(read_file_path) == True:
-                with open(read_file_path, "r") as f:
-                    r = f.read()
-                    with open(make_file_path, "a") as ff:
-                        ff.write(r)
-            else:
-                continue
+        if os.path.isfile(read_file_path) == True:
+            with open(read_file_path, "r") as f:
+                r = f.read()
+                with open(make_file_path, "a") as ff:
+                    ff.write(r)
+        else:
+            continue
     print("sum_log OK")
 
 
+def sum_log_sort():
+    from collections import defaultdict
 
+    with open(f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum.log", "r") as f:
+        temprory_domain_list = []
+        a = f.readlines()
+        for i in a:
+            domain = i.split()[1].replace("\n", "").replace("]", "")
+            count = i.split()[0].replace("[", "").replace(",", "")
+            temprory_domain_list.append([count, domain])
+
+        domain_counts = defaultdict(int)
+        for count, domain in temprory_domain_list:
+            domain_counts[domain] += int(count)
+
+        # 원하는 출력 형식으로 다시 변환
+        result = [[count, domain] for domain, count in domain_counts.items()]
+        result.sort(reverse=True)
+
+        with open(
+            f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log", "a"
+        ) as ff:
+            for i in result:
+                ff.write(f"{i}\n")
 
 
 # 가공된 기본 로그 생성 -> daily_top_request_domain.log 파일 생성
-# command = "sh /Users/taehoon/make_log_file.sh"
-# os.system(command)
+command = "sh /Users/taehoon/make_log_file.sh"
+os.system(command)
 
 
 # DB에서 데이터 불러옴
-# load_db_data()
+load_db_data()
 
 
 # 규격화된 로그 DB 파일로 생성 -> no_filter_result.log 파일 생성 및 daily_top_request_domain.log 파일 삭제
-# log_contrast_with_db()
+log_contrast_with_db()
 
 
 # 5이상의 도메인만 로그 파일로 다시 생성;; -> result.log 파일 생성 및 no_filter_result.log 파일 삭제
-# without_one_five_log()
+without_one_five_log()
 
 
-# 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
-# sum_log()
+if datetime.now().day == 1:
+    # 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
+    sum_log()
 
-# 한달치 로그 합친것을 소트
-
-
-# DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
-# input_deactivate_data()
+    # 한달치 로그 합친것을 소트
+    sum_log_sort()
+    
+    # DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
+    input_deactivate_data()
