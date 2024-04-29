@@ -97,11 +97,14 @@ def input_deactivate_data():
         with conn.cursor() as cur:
             from datetime import datetime
 
+            count = 0
             with open(
                 f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log"
             ) as f:
                 a = f.readlines()
-                for i in range(0, 10):
+                for i in range(len(a)):
+                    if count == 10:
+                        break
                     domain = (
                         a[i].split(",")[1].replace("]\n", "").replace("'", "").lstrip()
                     )
@@ -114,10 +117,10 @@ def input_deactivate_data():
 
                     cur.execute("select domain, hash from company_logo;")
                     # cur.fetchall()
-                    counter = 0
+                    exist_db = 0
                     for db_domain in cur:
                         if domain in db_domain:
-                            counter += 1
+                            exist_db += 1
                             break
                         # if domain in db_domain and len(hash) <= 30:
                         #     # print(db_domain)
@@ -139,13 +142,14 @@ def input_deactivate_data():
                         #     )
                         #     conn.commit()
                     d = datetime.utcnow() + timedelta(hours=9)
-                    if counter == 0:
+                    if exist_db == 0:
                         cur.execute(
                             f"insert into company_logo (domain, title, hash, created_at, updated_at) VALUES (%s, %s, %s, %s, %s);",
                             (domain, "", "", d, d),
                         )
 
                         conn.commit()
+                        count += 1
             cur.close()
 
 
@@ -359,29 +363,29 @@ def sum_log_sort():
                 ff.write(f"{i}\n")
 
 
-# # 가공된 기본 로그 생성 -> daily_top_request_domain.log 파일 생성
-# command = "sh /Users/taehoon/make_log_file.sh"
-# os.system(command)
+# 가공된 기본 로그 생성 -> daily_top_request_domain.log 파일 생성
+command = "sh /Users/taehoon/make_log_file.sh"
+os.system(command)
 #
 #
 # # DB에서 데이터 불러옴
-# load_db_data()
+load_db_data()
 #
 #
 # # 규격화된 로그 DB 파일로 생성 -> no_filter_result.log 파일 생성 및 daily_top_request_domain.log 파일 삭제
-# log_contrast_with_db()
+log_contrast_with_db()
 #
 #
 # # 5이상의 도메인만 로그 파일로 다시 생성;; -> result.log 파일 생성 및 no_filter_result.log 파일 삭제
-# without_one_five_log()
+without_one_five_log()
 
 
-if datetime.now().day == 29:
+if datetime.now().day == 1:
     # 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
-    # sum_log()
+    sum_log()
     #
     # # 한달치 로그 합친것을 소트
-    # sum_log_sort()
+    sum_log_sort()
 
     # DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
     input_deactivate_data()
