@@ -38,7 +38,7 @@ uniq_list = []
 d = []
 now = datetime.today()
 file_date = now.strftime("%Y-%m-%d")
-# file_date = "2024-04-23"
+# file_date = "2024-04-29"
 m = [
     "January",
     "February",
@@ -76,97 +76,92 @@ def input_deactivate_data():
             passwd=rds_password,
             db="company_logo",
         )
-        # 계발
-        # with SSHTunnelForwarder(
-        #     (dev_bastion_host, 22),
-        #     ssh_username=dev_bastion_user,
-        #     ssh_pkey=dev_bastion_key,
-        #     remote_bind_address=(
-        #         dev_db_host,
-        #         3306,
-        #     ),
-        # ) as tunnel:
-        #     conn = pymysql.connect(
-        #         host="localhost",
-        #         port=tunnel.local_bind_port,
-        #         user=dev_db_user,
-        #         passwd=dev_db_pass,
-        #         db=dev_db_name,
-        #     )
+    # 계발
+    # with SSHTunnelForwarder(
+    #     (dev_bastion_host, 22),
+    #     ssh_username=dev_bastion_user,
+    #     ssh_pkey=dev_bastion_key,
+    #     remote_bind_address=(
+    #         dev_db_host,
+    #         3306,
+    #     ),
+    # ) as tunnel:
+    #     conn = pymysql.connect(
+    #         host="localhost",
+    #         port=tunnel.local_bind_port,
+    #         user=dev_db_user,
+    #         passwd=dev_db_pass,
+    #         db=dev_db_name,
+    #     )
 
-        with conn.cursor() as cur:
-            from datetime import datetime
+    with conn.cursor() as cur:
+        from datetime import datetime
 
-            with open(
-                f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log"
-            ) as f:
-                a = f.readlines()
-                for i in range(0, 10):
-                    if int(a[i].split(",")[0].replace("[", "")) >= 20:
-                        domain = (
-                            a[i]
-                            .split(",")[1]
-                            .replace("]\n", "")
-                            .replace("'", "")
-                            .lstrip()
-                        )
-                        # hit_rate = int(i.split(",")[0].replace("[", ""))
-                        # query_domain_result = (
-                        #     cur.query(CompanyLogoDailyDB)
-                        #     .filter(CompanyLogoDailyDB.domain == domain)
-                        #     .first()
-                        # )
+        with open(
+            f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log"
+        ) as f:
+            a = f.readlines()
+            for i in range(0, 10):
+                domain = a[i].split(",")[1].replace("]\n", "").replace("'", "").lstrip()
+                # hit_rate = int(i.split(",")[0].replace("[", ""))
+                # query_domain_result = (
+                #     cur.query(CompanyLogoDailyDB)
+                #     .filter(CompanyLogoDailyDB.domain == domain)
+                #     .first()
+                # )
 
-                        cur.execute("select domain, hash from company_logo;")
-                        cur.fetchall()
-                        counter = 0
-                        for db_domain in cur:
-                            # hash = str(db_domain).split(",")[1]
-                            if domain in db_domain:
-                                counter += 1
-                            # if domain in db_domain and len(hash) <= 30:
-                            #     # print(db_domain)
-                            #     # print(str(db_domain))
-                            #     # print(str(db_domain).split(",")[2])
-                            #     print(str(db_domain).split(",")[2])
-                            #     db_hit_rate = int(
-                            #         str(db_domain)
-                            #         .split(",")[2]
-                            #         .replace(" ", "")
-                            #         .replace(")", "")
-                            #     )
-                            #     db_hit_rate += hit_rate
-                            #     # print(db_domain)
-                            #     add_value = domain + "zzz"
-                            #     cur.execute(
-                            #         f"update company_logo set test={db_hit_rate} where domain=%s;",
-                            #         (domain),
-                            #     )
-                            #     conn.commit()
-                        import datetime
+                cur.execute("select domain, hash from company_logo;")
+                cur.fetchall()
+                counter = 0
+                for db_domain in cur:
+                    # hash = str(db_domain).split(",")[1]
+                    if domain in db_domain:
+                        counter += 1
+                    # if domain in db_domain and len(hash) <= 30:
+                    #     # print(db_domain)
+                    #     # print(str(db_domain))
+                    #     # print(str(db_domain).split(",")[2])
+                    #     print(str(db_domain).split(",")[2])
+                    #     db_hit_rate = int(
+                    #         str(db_domain)
+                    #         .split(",")[2]
+                    #         .replace(" ", "")
+                    #         .replace(")", "")
+                    #     )
+                    #     db_hit_rate += hit_rate
+                    #     # print(db_domain)
+                    #     add_value = domain + "zzz"
+                    #     cur.execute(
+                    #         f"update company_logo set test={db_hit_rate} where domain=%s;",
+                    #         (domain),
+                    #     )
+                    #     conn.commit()
+                import datetime
 
-                        d = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
-                        if counter == 0:
-                            cur.execute(
-                                f"insert into company_logo (domain, title, hash, created_at, updated_at) VALUES (%s, %s, %s, %s, %s);",
-                                (domain, "", "", d, d),
-                            )
+                d = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+                if counter == 0:
+                    cur.execute(
+                        f"insert into company_logo (domain, title, hash, created_at, updated_at) VALUES (%s, %s, %s, %s, %s);",
+                        (domain, "", "", d, d),
+                    )
 
-                        conn.commit()
-            cur.close()
+                conn.commit()
+        cur.close()
 
-        # logo = CompanyLogoDailyDB()
-        # if query_domain_result:
-        #     query_domain_result.hit_rate += hit_rate
-        # else:
-        #     logo.domain = domain
-        #     logo.hit_rate = hit_rate
-        #     d.append(logo)
+    # logo = CompanyLogoDailyDB()
+    # if query_domain_result:
+    #     query_domain_result.hit_rate += hit_rate
+    # else:
+    #     logo.domain = domain
+    #     logo.hit_rate = hit_rate
+    #     d.append(logo)
 
-        # print(i.split(",")[1].replace("]\n", "").replace("'", "").lstrip())
-        # print(int(i.split(",")[0].replace("[", "")))
-    # session.add_all(d)
-    # session.commit()
+    # print(i.split(",")[1].replace("]\n", "").replace("'", "").lstrip())
+    # print(int(i.split(",")[0].replace("[", "")))
+
+
+# session.add_all(d)
+# session.commit()
 
 
 # local
@@ -385,6 +380,9 @@ def sum_log():
 
 def sum_log_sort():
     from collections import defaultdict
+    import re
+
+    domain_pattern = re.compile(r"^[a-zA-Z0-9.-]{1,}\.[a-zA-Z]{2,}$")
 
     with open(f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum.log", "r") as f:
         temprory_domain_list = []
@@ -409,29 +407,29 @@ def sum_log_sort():
                 ff.write(f"{i}\n")
 
 
-# 가공된 기본 로그 생성 -> daily_top_request_domain.log 파일 생성
-command = "sh /Users/taehoon/make_log_file.sh"
-os.system(command)
+# # 가공된 기본 로그 생성 -> daily_top_request_domain.log 파일 생성
+# command = "sh /Users/taehoon/make_log_file.sh"
+# os.system(command)
+#
+#
+# # DB에서 데이터 불러옴
+# load_db_data()
+#
+#
+# # 규격화된 로그 DB 파일로 생성 -> no_filter_result.log 파일 생성 및 daily_top_request_domain.log 파일 삭제
+# log_contrast_with_db()
+#
+#
+# # 5이상의 도메인만 로그 파일로 다시 생성;; -> result.log 파일 생성 및 no_filter_result.log 파일 삭제
+# without_one_five_log()
 
 
-# DB에서 데이터 불러옴
-load_db_data()
-
-
-# 규격화된 로그 DB 파일로 생성 -> no_filter_result.log 파일 생성 및 daily_top_request_domain.log 파일 삭제
-log_contrast_with_db()
-
-
-# 5이상의 도메인만 로그 파일로 다시 생성;; -> result.log 파일 생성 및 no_filter_result.log 파일 삭제
-without_one_five_log()
-
-
-if datetime.now().day == 1:
+if datetime.now().day == 29:
     # 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
-    sum_log()
+    # sum_log()
+    #
+    # # 한달치 로그 합친것을 소트
+    # sum_log_sort()
 
-    # 한달치 로그 합친것을 소트
-    sum_log_sort()
-    
     # DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
     input_deactivate_data()
