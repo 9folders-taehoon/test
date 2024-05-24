@@ -41,7 +41,7 @@ uniq_list = []
 d = []
 now = datetime.today()
 file_date = now.strftime("%Y-%m-%d")
-# file_date = "2024-04-29"
+# file_date = "2024-05-20"
 m = [
     "January",
     "February",
@@ -202,7 +202,8 @@ def input_deactivate_data():
 
             count = 0
             with open(
-                f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log"
+                f"/Users/taehoon/logs/{datetime.now().month}-{datetime.now().day}_log_sum_sort.log",
+                "r",
             ) as f:
                 a = f.readlines()
                 for i in range(len(a)):
@@ -278,13 +279,21 @@ def delete_file(filepath):
 
 
 def sum_log():
-    make_file_path = f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum.log"
-
+    make_file_path = (
+        f"/Users/taehoon/logs/{datetime.now().month}-{datetime.now().day}_log_sum.log"
+    )
+    today = datetime.today()
     # for day in range(calendar.monthrange(year, last_month)[1]):
-    for day in range(calendar.monthrange(year, last_month + 1)[1]):
-        format_day = "{:02}".format(day + 1)
+    for day in range(29, -1, -1):
+        date = today - timedelta(days=day)
+
+        format_day = "{:02}".format(date.day)
+        format_month = "{:02}".format(date.month)
+
         # read_file_path = f"/Users/taehoon/logs/final_result_{year}-{format_month}-{format_day}.log"
-        read_file_path = f"/Users/taehoon/logs/result_{year}-04-{format_day}.log"
+        read_file_path = (
+            f"/Users/taehoon/logs/result_{year}-{format_month}-{format_day}.log"
+        )
 
         if os.path.isfile(read_file_path) == True:
             with open(read_file_path, "r") as f:
@@ -299,7 +308,9 @@ def sum_log():
 def sum_log_sort():
     domain_pattern = re.compile(r"^[a-zA-Z0-9.-]{2,}\.[a-zA-Z]{2,}$")
 
-    with open(f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum.log", "r") as f:
+    with open(
+        f"/Users/taehoon/logs/{datetime.now().month}-{datetime.now().day}_log_sum.log"
+    ) as f:
         temprory_domain_list = []
         a = f.readlines()
         for i in a:
@@ -320,7 +331,8 @@ def sum_log_sort():
         result.sort(reverse=True)
 
         with open(
-            f"/Users/taehoon/logs/{m[datetime.now().month-1]}_log_sum_sort.log", "a"
+            f"/Users/taehoon/logs/{datetime.now().month}-{datetime.now().day}_log_sum_sort.log",
+            "a",
         ) as ff:
             for i in result:
                 ff.write(f"{i}\n")
@@ -342,15 +354,15 @@ log_contrast_with_db()
 # # # 5이상의 도메인만 로그 파일로 다시 생성;; -> result.log 파일 생성 및 no_filter_result.log 파일 삭제
 without_one_five_log()
 #
-if (
-    datetime.now().day
-    == calendar.monthrange(datetime.now().year, datetime.now().month)[1]
-):
-    # 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
-    sum_log()
-    #
-    # # 한달치 로그 합친것을 소트
-    sum_log_sort()
-
-    # DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
-    input_deactivate_data()
+# if (
+#     datetime.now().day
+#     == calendar.monthrange(datetime.now().year, datetime.now().month)[1]
+# ):
+# 한달치 로그 합침 -> monthly_log_sum.log 파일 생성
+# sum_log()
+# #     #
+# #     # # 한달치 로그 합친것을 소트
+# sum_log_sort()
+#
+# DB 데이터와 비교하여 일정 수준의 Request 를 받은 도메인 DB 에 등록
+# input_deactivate_data()
